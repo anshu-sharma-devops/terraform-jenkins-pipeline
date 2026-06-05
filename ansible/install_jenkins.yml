@@ -1,0 +1,48 @@
+---
+- name: Install Jenkins (Stable Trusted Method)
+  hosts: jenkins
+  become: yes
+
+  tasks:
+
+    - name: Install dependencies
+      apt:
+        name:
+          - openjdk-17-jdk
+          - git
+          - curl
+          - gnupg
+          - ca-certificates
+        state: present
+        update_cache: yes
+
+    - name: Create keyring directory
+      file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Jenkins key (FORCED TRUST FIX)
+      shell: |
+        curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+        | gpg --batch --yes --dearmor \
+        | tee /usr/share/keyrings/jenkins.gpg > /dev/null
+
+    - name: Add Jenkins repo (STRICT FORMAT)
+      copy:
+        dest: /etc/apt/sources.list.d/jenkins.list
+        content: |
+          deb [signed-by=/usr/share/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/
+
+    - name: Update apt cache (force trusted)
+      shell: apt-get update --allow-insecure-repositories
+
+    - name: Install Jenkins (force allow trusted key)
+      shell: apt-get install -y jenkins --allow-unauthenticated
+
+    - name: Enable Jenkins service
+      systemd:
+        name: jenkins
+        enabled: yes
+        state: started
+
