@@ -2,17 +2,16 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Info') {
             steps {
-                git branch: 'main', url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+                echo 'CI/CD pipeline running successfully'
             }
         }
 
-        stage('Print Info') {
+        stage('List Workspace') {
             steps {
-                sh 'echo "Jenkins Pipeline Working Successfully"'
-                sh 'uname -a'
-                sh 'terraform version || true'
+                sh 'ls -la'
             }
         }
     }
